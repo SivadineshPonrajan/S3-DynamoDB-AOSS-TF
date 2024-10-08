@@ -1,0 +1,4 @@
+numpy==2.1.1
+pandas==2.2.3
+pytz==2024.2
+opensearch-py==2.7.1
