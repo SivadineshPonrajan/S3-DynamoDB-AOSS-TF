@@ -1,4 +1,4 @@
-# AWS-Zero-ETL
+# S3-DynamoDB-AOSS-TF
 
 ### Files and Folders
 ```
