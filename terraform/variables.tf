@@ -1,31 +1,32 @@
 variable "aws_region" {
   description = "European Server Region - Stockholm"
-  default     = "eu-north-1"
+  type        = string
 }
 
 variable "s3_bucket" {
   description = "S3 Bucket for CSV files"
-  default     = "second-hand-cars-landing-zone"
+  type        = string
 }
 
 variable "dynamodb_table" {
   description = "DynamoDB table - NoSQL database"
-  default     = "CustomerData"
+  type        = string
 }
 
 variable "opensearch_domain" {
   description = "OpenSearch domain"
-  default     = "customer-search"
+  type        = string
 }
 
 variable "opensearch_username" {
   description = "The master username for OpenSearch."
-  default     = "admin"
+  type        = string
 }
 
 variable "opensearch_password" {
   description = "The master password for OpenSearch."
-  default     = "Batman@123"
+  type        = string
+  sensitive   = true
 }
 
 variable "lambda_function" {
@@ -37,7 +38,13 @@ variable "lambda_function_zip" {
   description = "Path to the Lambda transformation function ZIP file"
   default     = "../lambda/package/lambda_transform.zip"
 }
+
 variable "lambda_layer_zip" {
   description = "Path to the Lambda layer ZIP file"
   default     = "../lambda/package/lambda_layer.zip"
+}
+
+variable "dynamodb_tfstate_lock" {
+  description = "DynamoDB table for Terraform state lock"
+  type        = string
 }

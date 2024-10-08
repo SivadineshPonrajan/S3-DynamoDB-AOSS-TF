@@ -1,0 +1,60 @@
+name: Terraform CI/CD with Github Actions
+
+on:
+  push:
+    branches: [ add-ons ]
+  pull_request:
+    branches: [ add-ons ]
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+    
+    - name: Remove .terraform directory
+      run: |
+        if [ -d ".terraform" ]; then
+          rm -rf .terraform
+          echo ".terraform directory removed."
+        else
+          echo ".terraform directory does not exist."
+        fi
+
+    - name: Terraform Init
+      working-directory: terraform
+      run: |
+        terraform init -backend-config="bucket=${{ secrets.TF_S3_BUCKET }}" \
+                       -backend-config="key=add-ons/terraform.tfstate" \
+                       -backend-config="region=${{ secrets.AWS_REGION }}" \
+                       -backend-config="dynamodb_table=${{ secrets.DYNAMODB_TFSTATE_LOCK }}"
+
+    - name: Terraform Plan
+      working-directory: terraform
+      run: |
+        terraform plan -input=false \
+          -var="opensearch_username=${{ secrets.OPENSEARCH_USERNAME }}" \
+          -var="opensearch_password=${{ secrets.OPENSEARCH_PASSWORD }}" \
+          -var="aws_region=${{ secrets.AWS_REGION }}" \
+          -var="s3_bucket=${{ secrets.S3_BUCKET }}" \
+          -var="dynamodb_table=${{ secrets.DYNAMODB_TABLE }}" \
+          -var="dynamodb_tfstate_lock=${{ secrets.DYNAMODB_TFSTATE_LOCK }}" \
+          -var="opensearch_domain=${{ secrets.OPENSEARCH_DOMAIN }}" \
+          -out=tfplan
+
+    - name: Terraform Apply
+      working-directory: terraform
+      if: github.ref == 'refs/heads/add-ons' && github.event_name == 'push'
+      run: |
+        terraform apply -input=false -auto-approve tfplan

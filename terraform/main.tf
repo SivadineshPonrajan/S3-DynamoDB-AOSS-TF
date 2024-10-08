@@ -1,3 +1,12 @@
+terraform {             # Will be overrided from the github action workflow
+  backend "s3" {
+    bucket         = ""
+    key            = ""
+    region         = ""
+    dynamodb_table = ""
+  }
+}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -16,7 +25,6 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
   }
   depends_on = [aws_lambda_permission.allow_s3]
 }
-
 
 output "opensearch_endpoint" {
   description = "The endpoint of the OpenSearch instance - to use it with search script"
